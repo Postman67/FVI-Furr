@@ -92,15 +92,6 @@ class StallEditModal(discord.ui.Modal):
         
         # Mall-specific fields
         if table_name == "the_mall":
-            self.street_name = discord.ui.TextInput(
-                label="Street Name",
-                placeholder="Wall Street, Artist Alley, Woke Ave, Five, Poland Street",
-                default=existing_data.get("StreetName", ""),
-                required=False,
-                max_length=50
-            )
-            self.add_item(self.street_name)
-            
             self.items_sold = discord.ui.TextInput(
                 label="Items Sold",
                 placeholder="Leave empty to keep current value",
@@ -124,19 +115,6 @@ class StallEditModal(discord.ui.Modal):
             update_data["StallName"] = self.stall_name.value.strip()
         
         if self.table_name == "the_mall":
-            if self.street_name.value.strip():
-                # Validate street name
-                valid_streets = StreetSelectionView.VALID_STREETS
-                if self.street_name.value.strip() not in valid_streets:
-                    embed = discord.Embed(
-                        title="Invalid Street Name",
-                        description=f"Street name must be one of: {', '.join(valid_streets)}",
-                        color=0xe74c3c
-                    )
-                    await interaction.followup.send(embed=embed, ephemeral=True)
-                    return
-                update_data["StreetName"] = self.street_name.value.strip()
-            
             if self.items_sold.value.strip():
                 update_data["ItemsSold"] = self.items_sold.value.strip()
         
@@ -327,8 +305,6 @@ class EntryEdit(commands.Cog):
                 updated_field_names.append("Owner IGN")
             elif field == "StallName":
                 updated_field_names.append("Stall Name")
-            elif field == "StreetName":
-                updated_field_names.append("Street Name")
             elif field == "ItemsSold":
                 updated_field_names.append("Items Sold")
             else:
