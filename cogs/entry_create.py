@@ -47,7 +47,7 @@ class StallCreationModal(discord.ui.Modal):
         # Common fields
         self.stall_number = discord.ui.TextInput(
             label="Stall Number",
-            placeholder="Enter the stall number (e.g., 1, 2, 3...)",
+            placeholder="Enter the stall number (e.g., 1, 2, 3...)" if table_name == "warp_hall" else "Enter the stall number (e.g., 1, 2.5, 3.25...)",
             required=True,
             max_length=10
         )
@@ -91,17 +91,31 @@ class StallCreationModal(discord.ui.Modal):
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer()
         
-        # Validate stall number
+        # Validate stall number based on table type
         try:
-            stall_num = int(self.stall_number.value)
-            if stall_num <= 0:
-                raise ValueError("Stall number must be positive")
+            if self.table_name == "warp_hall":
+                # Warp Hall requires integers only
+                stall_num = int(self.stall_number.value)
+                if stall_num <= 0:
+                    raise ValueError("Stall number must be positive")
+            else:
+                # The Mall allows floating point numbers
+                stall_num = float(self.stall_number.value)
+                if stall_num <= 0:
+                    raise ValueError("Stall number must be positive")
         except ValueError:
-            embed = discord.Embed(
-                title="Invalid Stall Number",
-                description="Stall number must be a positive integer.",
-                color=0xe74c3c
-            )
+            if self.table_name == "warp_hall":
+                embed = discord.Embed(
+                    title="Invalid Stall Number",
+                    description="Stall number must be a positive integer for Warp Hall.",
+                    color=0xe74c3c
+                )
+            else:
+                embed = discord.Embed(
+                    title="Invalid Stall Number",
+                    description="Stall number must be a positive number for The Mall.",
+                    color=0xe74c3c
+                )
             await interaction.followup.send(embed=embed, ephemeral=True)
             return
         
@@ -253,7 +267,7 @@ class EntryCreate(commands.Cog):
 
     @app_commands.command(name="stallcreatetm", description="Create a new The Mall stall entry")
     @app_commands.describe(
-        stall_number="The stall number",
+        stall_number="The stall number (can include decimals)",
         street_name="The street name",
         ign="Owner's in-game name", 
         stall_name="Name of the stall",
@@ -262,7 +276,7 @@ class EntryCreate(commands.Cog):
     async def stallcreatetm(
         self, 
         interaction: discord.Interaction, 
-        stall_number: int,
+        stall_number: float,
         street_name: app_commands.Transform[str, StreetNameTransformer],
         ign: str,
         stall_name: str,
@@ -275,7 +289,7 @@ class EntryCreate(commands.Cog):
         if stall_number <= 0:
             embed = discord.Embed(
                 title="Invalid Stall Number",
-                description="Stall number must be a positive integer.",
+                description="Stall number must be a positive number for The Mall.",
                 color=0xe74c3c
             )
             await interaction.followup.send(embed=embed, ephemeral=True)
@@ -316,7 +330,7 @@ class EntryCreate(commands.Cog):
 
     @app_commands.command(name="stallcreatewh", description="Create a new Warp Hall stall entry")
     @app_commands.describe(
-        stall_number="The stall number",
+        stall_number="The stall number (whole numbers only)",
         ign="Owner's in-game name",
         stall_name="Name of the stall"
     )
@@ -334,7 +348,7 @@ class EntryCreate(commands.Cog):
         if stall_number <= 0:
             embed = discord.Embed(
                 title="Invalid Stall Number", 
-                description="Stall number must be a positive integer.",
+                description="Stall number must be a positive integer for Warp Hall.",
                 color=0xe74c3c
             )
             await interaction.followup.send(embed=embed, ephemeral=True)

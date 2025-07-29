@@ -20,7 +20,7 @@ class StreetSelectionView(discord.ui.View):
         "Poland Street"
     ]
     
-    def __init__(self, stall_number: int, cog, timeout=300):
+    def __init__(self, stall_number, cog, timeout=300):
         super().__init__(timeout=timeout)
         self.stall_number = stall_number
         self.cog = cog
@@ -166,7 +166,7 @@ class EntryEdit(commands.Cog):
             print(f"Error connecting to MariaDB: {e}")
             return None
 
-    async def get_stall_data(self, table_name: str, stall_number: int, street_name: str = None) -> dict:
+    async def get_stall_data(self, table_name: str, stall_number) -> dict:
         """Get stall data from the specified table"""
         conn = self.get_db_connection()
         if not conn:
@@ -234,7 +234,7 @@ class EntryEdit(commands.Cog):
                 conn.close()
             return {"error": f"Database query failed: {str(e)}"}
 
-    async def update_stall_entry(self, table_name: str, stall_number: int, update_data: dict, street_name: str = None) -> dict:
+    async def update_stall_entry(self, table_name: str, stall_number, update_data: dict, street_name: str = None) -> dict:
         """Update a stall entry in the database"""
         conn = self.get_db_connection()
         if not conn:
@@ -322,20 +322,32 @@ class EntryEdit(commands.Cog):
     @app_commands.command(name="stalledit", description="Edit an existing stall entry")
     @app_commands.describe(
         table="Choose which location to edit a stall in",
-        stall_number="The stall number to edit"
+        stall_number="The stall number to edit (integers for Warp Hall, decimals allowed for The Mall)"
     )
     @app_commands.choices(table=[
         app_commands.Choice(name="Warp Hall", value="warp_hall"),
         app_commands.Choice(name="The Mall", value="the_mall")
     ])
-    async def stalledit(self, interaction: discord.Interaction, table: app_commands.Choice[str], stall_number: int):
+    async def stalledit(self, interaction: discord.Interaction, table: app_commands.Choice[str], stall_number: float):
         """Edit an existing stall entry"""
         
-        # Validate stall number
+        # Validate stall number based on table type
+        if table.value == "warp_hall":
+            # Warp Hall requires integers
+            if not isinstance(stall_number, int) and not stall_number.is_integer():
+                embed = discord.Embed(
+                    title="Invalid Stall Number",
+                    description="Warp Hall stall numbers must be whole numbers (integers).",
+                    color=0xe74c3c
+                )
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+                return
+            stall_number = int(stall_number)
+        
         if stall_number <= 0:
             embed = discord.Embed(
                 title="Invalid Stall Number",
-                description="Stall number must be a positive integer.",
+                description="Stall number must be a positive number.",
                 color=0xe74c3c
             )
             await interaction.response.send_message(embed=embed, ephemeral=True)

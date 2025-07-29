@@ -20,7 +20,7 @@ class StreetSelectionView(discord.ui.View):
         "Poland Street"
     ]
     
-    def __init__(self, stall_number: int, cog, timeout=300):
+    def __init__(self, stall_number, cog, timeout=300):
         super().__init__(timeout=timeout)
         self.stall_number = stall_number
         self.cog = cog
@@ -127,7 +127,7 @@ class EntryGet(commands.Cog):
         embed.set_footer(text="Furryville Index Database")
         return embed
 
-    async def get_stall_data(self, table_name: str, stall_number: int) -> dict:
+    async def get_stall_data(self, table_name: str, stall_number) -> dict:
         """Get stall data from the specified table (Warp Hall only)"""
         if table_name != "warp_hall":
             return {"error": "This method only supports Warp Hall. Use get_stall_data_with_street for The Mall."}
@@ -158,7 +158,7 @@ class EntryGet(commands.Cog):
                 conn.close()
             return {"error": f"Database query failed: {str(e)}"}
 
-    async def get_stall_data_with_street(self, table_name: str, stall_number: int, street_name: str) -> dict:
+    async def get_stall_data_with_street(self, table_name: str, stall_number, street_name: str) -> dict:
         """Get stall data from The Mall with specific street name"""
         conn = self.get_db_connection()
         if not conn:
@@ -186,7 +186,7 @@ class EntryGet(commands.Cog):
                 conn.close()
             return {"error": f"Database query failed: {str(e)}"}
 
-    async def check_mall_stall_exists(self, stall_number: int) -> dict:
+    async def check_mall_stall_exists(self, stall_number) -> dict:
         """Check if a stall number exists in The Mall (any street)"""
         conn = self.get_db_connection()
         if not conn:
@@ -216,20 +216,32 @@ class EntryGet(commands.Cog):
     @app_commands.command(name="stallview", description="View details of a specific stall")
     @app_commands.describe(
         table="The location to search (warp or mall)",
-        stall_number="The stall number to look up"
+        stall_number="The stall number to look up (integers for Warp Hall, decimals allowed for The Mall)"
     )
     @app_commands.choices(table=[
         app_commands.Choice(name="Warp Hall", value="warp_hall"),
         app_commands.Choice(name="The Mall", value="the_mall")
     ])
-    async def stallview(self, interaction: discord.Interaction, table: app_commands.Choice[str], stall_number: int):
+    async def stallview(self, interaction: discord.Interaction, table: app_commands.Choice[str], stall_number: float):
         """View details of a specific stall"""
         
-        # Validate stall number
+        # Validate stall number based on table type
+        if table.value == "warp_hall":
+            # Warp Hall requires integers
+            if not isinstance(stall_number, int) and not stall_number.is_integer():
+                embed = discord.Embed(
+                    title="Invalid Stall Number",
+                    description="Warp Hall stall numbers must be whole numbers (integers).",
+                    color=0xe74c3c
+                )
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+                return
+            stall_number = int(stall_number)
+        
         if stall_number <= 0:
             embed = discord.Embed(
                 title="Invalid Stall Number",
-                description="Stall number must be a positive integer.",
+                description="Stall number must be a positive number.",
                 color=0xe74c3c
             )
             await interaction.response.send_message(embed=embed, ephemeral=True)
