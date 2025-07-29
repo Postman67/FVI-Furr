@@ -9,6 +9,61 @@ from discord.ext import commands
 from dotenv import load_dotenv
 import pymysql as mariadb
 
+class StreetSelectionView(discord.ui.View):
+    """View for selecting street name when viewing The Mall stalls"""
+    
+    VALID_STREETS = [
+        "Wall Street",
+        "Artist Alley", 
+        "Woke Ave",
+        "Five",
+        "Poland Street"
+    ]
+    
+    def __init__(self, stall_number: int, cog, timeout=300):
+        super().__init__(timeout=timeout)
+        self.stall_number = stall_number
+        self.cog = cog
+        
+        # Create dropdown with street options
+        select = discord.ui.Select(
+            placeholder="Select the street name for this stall...",
+            options=[
+                discord.SelectOption(label=street, value=street, description=f"View stall #{stall_number} on {street}")
+                for street in self.VALID_STREETS
+            ]
+        )
+        select.callback = self.street_selected
+        self.add_item(select)
+    
+    async def street_selected(self, interaction: discord.Interaction):
+        """Handle street selection and show stall data"""
+        street_name = interaction.data['values'][0]
+        
+        # Get stall data with specific street
+        stall_data = await self.cog.get_stall_data_with_street("the_mall", self.stall_number, street_name)
+        
+        if "error" in stall_data:
+            embed = discord.Embed(
+                title="Error",
+                description=stall_data["error"],
+                color=0xe74c3c
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+        
+        # Create and send embed
+        embed = self.cog.create_stall_embed("the_mall", stall_data)
+        if embed:
+            await interaction.response.send_message(embed=embed)
+        else:
+            embed = discord.Embed(
+                title="Error",
+                description="Failed to create embed for stall data.",
+                color=0xe74c3c
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+
 class EntryGet(commands.Cog):
     """Cog for retrieving stall entries from the database"""
     
@@ -73,7 +128,10 @@ class EntryGet(commands.Cog):
         return embed
 
     async def get_stall_data(self, table_name: str, stall_number: int) -> dict:
-        """Get stall data from the specified table"""
+        """Get stall data from the specified table (Warp Hall only)"""
+        if table_name != "warp_hall":
+            return {"error": "This method only supports Warp Hall. Use get_stall_data_with_street for The Mall."}
+            
         conn = self.get_db_connection()
         if not conn:
             return {"error": "Database connection failed"}
@@ -81,16 +139,7 @@ class EntryGet(commands.Cog):
         try:
             cursor = conn.cursor()
             
-            # Define table-specific queries for easy modification
-            table_queries = {
-                "warp_hall": "SELECT StallNumber, IGN, StallName FROM warp_hall WHERE StallNumber = %s",
-                "the_mall": "SELECT StallNumber, StreetName, IGN, StallName, ItemsSold FROM the_mall WHERE StallNumber = %s"
-            }
-            
-            query = table_queries.get(table_name)
-            if not query:
-                return {"error": f"Unknown table: {table_name}"}
-            
+            query = "SELECT StallNumber, IGN, StallName FROM warp_hall WHERE StallNumber = %s"
             cursor.execute(query, (stall_number,))
             result = cursor.fetchone()
             
@@ -98,19 +147,68 @@ class EntryGet(commands.Cog):
             conn.close()
             
             if not result:
-                return {"error": f"No stall found with number {stall_number} in {table_name}"}
+                return {"error": f"No stall found with number {stall_number} in Warp Hall"}
             
-            # Define column mappings for easy modification
-            column_mappings = {
-                "warp_hall": ["StallNumber", "IGN", "StallName"],
-                "the_mall": ["StallNumber", "StreetName", "IGN", "StallName", "ItemsSold"]
-            }
-            
-            columns = column_mappings.get(table_name, [])
+            columns = ["StallNumber", "IGN", "StallName"]
             return dict(zip(columns, result))
             
         except mariadb.Error as e:
-            print(f"Error querying {table_name}: {e}")
+            print(f"Error querying warp_hall: {e}")
+            if conn:
+                conn.close()
+            return {"error": f"Database query failed: {str(e)}"}
+
+    async def get_stall_data_with_street(self, table_name: str, stall_number: int, street_name: str) -> dict:
+        """Get stall data from The Mall with specific street name"""
+        conn = self.get_db_connection()
+        if not conn:
+            return {"error": "Database connection failed"}
+        
+        try:
+            cursor = conn.cursor()
+            
+            query = "SELECT StallNumber, StreetName, IGN, StallName, ItemsSold FROM the_mall WHERE StallNumber = %s AND StreetName = %s"
+            cursor.execute(query, (stall_number, street_name))
+            result = cursor.fetchone()
+            
+            cursor.close()
+            conn.close()
+            
+            if not result:
+                return {"error": f"No stall found with number {stall_number} on {street_name}"}
+            
+            columns = ["StallNumber", "StreetName", "IGN", "StallName", "ItemsSold"]
+            return dict(zip(columns, result))
+            
+        except mariadb.Error as e:
+            print(f"Error querying the_mall: {e}")
+            if conn:
+                conn.close()
+            return {"error": f"Database query failed: {str(e)}"}
+
+    async def check_mall_stall_exists(self, stall_number: int) -> dict:
+        """Check if a stall number exists in The Mall (any street)"""
+        conn = self.get_db_connection()
+        if not conn:
+            return {"error": "Database connection failed"}
+        
+        try:
+            cursor = conn.cursor()
+            
+            query = "SELECT COUNT(*) FROM the_mall WHERE StallNumber = %s"
+            cursor.execute(query, (stall_number,))
+            count = cursor.fetchone()[0]
+            
+            cursor.close()
+            conn.close()
+            
+            if count == 0:
+                return {"error": f"No stall found with number {stall_number} in The Mall"}
+            
+            return {"exists": True, "count": count}
+            
+        except mariadb.Error as e:
+            print(f"Error checking the_mall: {e}")
             if conn:
                 conn.close()
             return {"error": f"Database query failed: {str(e)}"}
@@ -126,7 +224,6 @@ class EntryGet(commands.Cog):
     ])
     async def stallview(self, interaction: discord.Interaction, table: app_commands.Choice[str], stall_number: int):
         """View details of a specific stall"""
-        await interaction.response.defer()
         
         # Validate stall number
         if stall_number <= 0:
@@ -135,32 +232,67 @@ class EntryGet(commands.Cog):
                 description="Stall number must be a positive integer.",
                 color=0xe74c3c
             )
-            await interaction.followup.send(embed=embed)
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
         
-        # Get stall data
-        stall_data = await self.get_stall_data(table.value, stall_number)
-        
-        if "error" in stall_data:
+        if table.value == "warp_hall":
+            # For Warp Hall, directly get and show stall data
+            await interaction.response.defer()
+            
+            stall_data = await self.get_stall_data("warp_hall", stall_number)
+            
+            if "error" in stall_data:
+                embed = discord.Embed(
+                    title="Error",
+                    description=stall_data["error"],
+                    color=0xe74c3c
+                )
+                await interaction.followup.send(embed=embed)
+                return
+            
+            # Create and send embed
+            embed = self.create_stall_embed("warp_hall", stall_data)
+            if embed:
+                await interaction.followup.send(embed=embed)
+            else:
+                embed = discord.Embed(
+                    title="Error",
+                    description="Failed to create embed for stall data.",
+                    color=0xe74c3c
+                )
+                await interaction.followup.send(embed=embed)
+                
+        else:  # the_mall
+            # For The Mall, first check if stall exists, then show street selection
+            await interaction.response.defer(ephemeral=True)
+            
+            stall_check = await self.check_mall_stall_exists(stall_number)
+            
+            if "error" in stall_check:
+                embed = discord.Embed(
+                    title="Error",
+                    description=stall_check["error"],
+                    color=0xe74c3c
+                )
+                await interaction.followup.send(embed=embed, ephemeral=True)
+                return
+            
+            # Show street selection dropdown
+            view = StreetSelectionView(stall_number, self)
             embed = discord.Embed(
-                title="Error",
-                description=stall_data["error"],
-                color=0xe74c3c
+                title="Select Street Name",
+                description=f"Stall #{stall_number} found in The Mall. Please select which street to view:",
+                color=0x3498db
             )
-            await interaction.followup.send(embed=embed)
-            return
-        
-        # Create and send embed
-        embed = self.create_stall_embed(table.value, stall_data)
-        if embed:
-            await interaction.followup.send(embed=embed)
-        else:
-            embed = discord.Embed(
-                title="Error",
-                description="Failed to create embed for stall data.",
-                color=0xe74c3c
-            )
-            await interaction.followup.send(embed=embed)
+            
+            if stall_check.get("count", 0) > 1:
+                embed.add_field(
+                    name="Multiple Locations", 
+                    value=f"This stall number exists on {stall_check['count']} different streets.", 
+                    inline=False
+                )
+            
+            await interaction.followup.send(embed=embed, view=view, ephemeral=True)
 
 async def setup(bot):
     """Setup function for the cog"""
