@@ -34,7 +34,7 @@ class FviClient(commands.Bot):
         await self.load_extension('cogs.maintenance')
         await self.load_extension('cogs.entry_get')
         await self.load_extension('cogs.entry_create')
-        # await self.load_extension('cogs.entry_edit')
+        await self.load_extension('cogs.entry_edit')
         # await self.load_extension('cogs.test')
 
         guild_ids = [
