@@ -90,18 +90,44 @@ class MaintenanceView(discord.ui.View):
     #     await self.quick_ephemeral(interaction, "🔄 Global slash commands synced! (May take up to 1 hour)")
     #     await self.fadeout_panel()
 
-    # @discord.ui.button(label="Reload Music Cog", emoji="📂", style=discord.ButtonStyle.success)
-    # async def reload_music(self, interaction: discord.Interaction, button: discord.ui.Button):
-    #     await interaction.response.defer(ephemeral=True)
+    @discord.ui.button(label="Reload StallCreate", emoji="📂", style=discord.ButtonStyle.success)
+    async def reload_stall_create(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer(ephemeral=True)
 
-    #     try:
-    #         await self.cog.bot.reload_extension("cogs.music")
-    #         result = "✅ Reloaded `cogs.music` successfully!"
-    #     except Exception as e:
-    #         result = f"❌ Failed to reload music cog: {e}"
+        try:
+            await self.cog.bot.reload_extension("cogs.entry_create")
+            result = "✅ Reloaded `cogs.entry_create` successfully!"
+        except Exception as e:
+            result = f"❌ Failed to reload entry create cog: {e}"
 
-    #     await self.quick_ephemeral(interaction, result)
-    #     await self.fadeout_panel()
+        await self.quick_ephemeral(interaction, result)
+        await self.fadeout_panel()
+
+    @discord.ui.button(label="Reload StallEdit", emoji="📂", style=discord.ButtonStyle.success)
+    async def reload_stall_edit(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer(ephemeral=True)
+
+        try:
+            await self.cog.bot.reload_extension("cogs.entry_edit")
+            result = "✅ Reloaded `cogs.entry_edit` successfully!"
+        except Exception as e:
+            result = f"❌ Failed to reload entry edit cog: {e}"
+
+        await self.quick_ephemeral(interaction, result)
+        await self.fadeout_panel()
+
+    @discord.ui.button(label="Reload StallView", emoji="📂", style=discord.ButtonStyle.success)
+    async def reload_stall_view(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer(ephemeral=True)
+
+        try:
+            await self.cog.bot.reload_extension("cogs.entry_get")
+            result = "✅ Reloaded `cogs.entry_get` successfully!"
+        except Exception as e:
+            result = f"❌ Failed to reload entry get cog: {e}"
+
+        await self.quick_ephemeral(interaction, result)
+        await self.fadeout_panel()
 
     @discord.ui.button(label="Reload Maintenance Cog", emoji="🛠️", style=discord.ButtonStyle.success)
     async def reload_maintenance(self, interaction: discord.Interaction, button: discord.ui.Button):

@@ -166,7 +166,7 @@ class EntryEdit(commands.Cog):
             print(f"Error connecting to MariaDB: {e}")
             return None
 
-    async def get_stall_data(self, table_name: str, stall_number) -> dict:
+    async def get_stall_data(self, table_name: str, stall_number, street_name: str = None) -> dict:
         """Get stall data from the specified table"""
         conn = self.get_db_connection()
         if not conn:
