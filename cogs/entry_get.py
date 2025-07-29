@@ -35,7 +35,7 @@ class EntryGet(commands.Cog):
         table_configs = {
             "warp_hall": {
                 "title": "Warp Hall Stall",
-                "color": 0x3498db,  # Blue
+                "color": 0xffd966,  # Yellow
                 "fields": [
                     ("Stall Number", "StallNumber"),
                     ("Owner IGN", "IGN"),
@@ -44,7 +44,7 @@ class EntryGet(commands.Cog):
             },
             "the_mall": {
                 "title": "The Mall Stall",
-                "color": 0xe74c3c,  # Red
+                "color": 0xffd966,  # Yellow
                 "fields": [
                     ("Stall Number", "StallNumber"),
                     ("Street Name", "StreetName"),
