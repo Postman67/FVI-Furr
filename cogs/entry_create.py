@@ -175,19 +175,30 @@ class EntryCreate(commands.Cog):
         try:
             cursor = conn.cursor()
             
-            # Check if stall number already exists
-            check_query = f"SELECT StallNumber FROM {table_name} WHERE StallNumber = %s"
-            cursor.execute(check_query, (data["StallNumber"],))
-            if cursor.fetchone():
-                cursor.close()
-                conn.close()
-                return {"success": False, "error": f"Stall number {data['StallNumber']} already exists in {table_name.replace('_', ' ').title()}"}
-            
-            # Insert the new entry
+            # Check if entry already exists based on table type
             if table_name == "warp_hall":
+                # For Warp Hall, only check StallNumber (single primary key)
+                check_query = "SELECT StallNumber FROM warp_hall WHERE StallNumber = %s"
+                cursor.execute(check_query, (data["StallNumber"],))
+                if cursor.fetchone():
+                    cursor.close()
+                    conn.close()
+                    return {"success": False, "error": f"Stall number {data['StallNumber']} already exists in Warp Hall"}
+                
+                # Insert the new entry
                 insert_query = "INSERT INTO warp_hall (StallNumber, IGN, StallName) VALUES (%s, %s, %s)"
                 values = (data["StallNumber"], data["IGN"], data["StallName"])
+                
             else:  # the_mall
+                # For The Mall, check both StallNumber AND StreetName (composite primary key)
+                check_query = "SELECT StallNumber FROM the_mall WHERE StallNumber = %s AND StreetName = %s"
+                cursor.execute(check_query, (data["StallNumber"], data["StreetName"]))
+                if cursor.fetchone():
+                    cursor.close()
+                    conn.close()
+                    return {"success": False, "error": f"Stall number {data['StallNumber']} already exists on {data['StreetName']}"}
+                
+                # Insert the new entry
                 insert_query = "INSERT INTO the_mall (StallNumber, StreetName, IGN, StallName, ItemsSold) VALUES (%s, %s, %s, %s, %s)"
                 values = (data["StallNumber"], data["StreetName"], data["IGN"], data["StallName"], data["ItemsSold"])
             
