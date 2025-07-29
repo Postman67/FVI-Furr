@@ -21,7 +21,6 @@ Lists all information (all collumns) of an table entry
 - Owner IGN (IGN)
 - Stall Name (StallName)
 
-
 #### Table Name: the_mall
 
 - Stall Number (StallNumber) (the_mall_pk)
