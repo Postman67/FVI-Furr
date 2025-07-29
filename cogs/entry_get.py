@@ -86,13 +86,20 @@ class EntryGet(commands.Cog):
 
     def create_stall_embed(self, table_name: str, stall_data: dict) -> discord.Embed:
         """Create an embed for stall information"""
+        # Format stall number to display as integer if it's a whole number
+        stall_number = stall_data.get('StallNumber', 'Unknown')
+        if isinstance(stall_number, float) and stall_number.is_integer():
+            stall_number_display = str(int(stall_number))
+        else:
+            stall_number_display = str(stall_number)
+        
         # Define table-specific configurations for easy modification
         table_configs = {
             "warp_hall": {
                 "title": "Warp Hall Stall",
                 "color": 0xffd966,  # Yellow
                 "fields": [
-                    ("Stall Number", "StallNumber"),
+                    ("Stall Number", stall_number_display),
                     ("Owner IGN", "IGN"),
                     ("Stall Name", "StallName")
                 ]
@@ -101,7 +108,7 @@ class EntryGet(commands.Cog):
                 "title": "The Mall Stall",
                 "color": 0xffd966,  # Yellow
                 "fields": [
-                    ("Stall Number", "StallNumber"),
+                    ("Stall Number", stall_number_display),
                     ("Street Name", "StreetName"),
                     ("Owner IGN", "IGN"),
                     ("Stall Name", "StallName"),
@@ -115,13 +122,17 @@ class EntryGet(commands.Cog):
             return None
             
         embed = discord.Embed(
-            title=f"{config['title']} #{stall_data.get('StallNumber', 'Unknown')}",
+            title=f"{config['title']} #{stall_number_display}",
             color=config["color"]
         )
         
         # Add fields dynamically based on configuration
         for field_name, db_column in config["fields"]:
-            value = stall_data.get(db_column, "Not Available")
+            if field_name == "Stall Number":
+                # Use the already formatted stall number
+                value = db_column  # This is already the formatted display value
+            else:
+                value = stall_data.get(db_column, "Not Available")
             embed.add_field(name=field_name, value=value, inline=True)
             
         embed.set_footer(text="Furryville Index Database")

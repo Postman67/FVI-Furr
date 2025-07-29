@@ -279,12 +279,19 @@ class EntryEdit(commands.Cog):
 
     def create_edit_success_embed(self, table_name: str, stall_data: dict, updated_fields: dict) -> discord.Embed:
         """Create a success embed for the edited stall"""
+        # Format stall number to display as integer if it's a whole number
+        stall_number = stall_data["StallNumber"]
+        if isinstance(stall_number, float) and stall_number.is_integer():
+            stall_number_display = str(int(stall_number))
+        else:
+            stall_number_display = str(stall_number)
+        
         if table_name == "warp_hall":
             embed = discord.Embed(
                 title="✅ Warp Hall Stall Updated Successfully!",
                 color=0x00ff00
             )
-            embed.add_field(name="Stall Number", value=stall_data["StallNumber"], inline=True)
+            embed.add_field(name="Stall Number", value=stall_number_display, inline=True)
             embed.add_field(name="Owner IGN", value=stall_data["IGN"], inline=True)
             embed.add_field(name="Stall Name", value=stall_data["StallName"], inline=True)
         else:  # the_mall
@@ -292,7 +299,7 @@ class EntryEdit(commands.Cog):
                 title="✅ The Mall Stall Updated Successfully!",
                 color=0x00ff00
             )
-            embed.add_field(name="Stall Number", value=stall_data["StallNumber"], inline=True)
+            embed.add_field(name="Stall Number", value=stall_number_display, inline=True)
             embed.add_field(name="Street Name", value=stall_data["StreetName"], inline=True)
             embed.add_field(name="Owner IGN", value=stall_data["IGN"], inline=True)
             embed.add_field(name="Stall Name", value=stall_data["StallName"], inline=False)
