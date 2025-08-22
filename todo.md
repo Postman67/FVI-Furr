@@ -1,15 +1,11 @@
-# Implement review submissions and editing
+# More commands for Review feature
 
-## Goals:
-- Let a normal user run /review to review and rate a stall
-- Let a user run /reviewedit to edit their review and rating of a stall
+### Needed command(s):
+- reviewdelete (MOD ONLY)
+delete a review entry
 
-## Limits:
-- /review commands should be avaliable to all users regardless of role
-- One review and rating per user per stall
-- Rating should be a value of 1-5 to be represented as stars
+- reviewedit (MOD ONLY)
+manually edit another users review
 
-## Methods:
-- Track user uniqeuness via Discord user ID (ReviewerID field in DB)
-- Record user plaintext name (ReviewerName field in DB). 
-- Update plaintext name with most up to date name if /reviewedit is ever run across all reviews with that user ID
+- reviewlist
+Lists all reviews for a specific stall. If a moderator is running this command, also appened the review's unquie ID (primary key)
