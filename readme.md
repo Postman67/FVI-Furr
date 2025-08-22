@@ -1,6 +1,8 @@
 # FVI-Furr
 ### Discord bot to server the greater needs of the Furryville index
 
+Bot will not work unless you have a .env file with the required fields
+
 ## Cogs Info
 #### - Maintenence Cog
 Serves as the in-Discord control center. Show uptime, purge messages, and restart the bot.
@@ -35,3 +37,15 @@ Lists all information (all collumns) of an table entry
 - Woke Ave
 - Five
 - Poland Street
+
+## The Mall Review entry format
+Table Name: the_mall_reviews
+- ReviewID (INT)
+- StallNumber (INT)
+- StreetName (String)
+- ReviewerID (BIGINT)
+- ReviewerName (String)
+- ReviewText (String) (Review Text)
+- Rating (INT)
+- CreatedAt (DATETIME)
+- UpdatedAt (DATETIME)
