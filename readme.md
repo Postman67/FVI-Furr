@@ -16,6 +16,9 @@ Edit an existing entry on either table
 #### - Entry Get
 Lists all information (all collumns) of an table entry
 
+#### - Entry Review
+Submit reviews for The Mall stalls only
+
 ## DB Formatting
 #### Table Name: warp_hall
 
