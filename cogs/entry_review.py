@@ -385,7 +385,14 @@ class EntryReview(commands.Cog):
                 if not self.has_existing:
                     button.label = "Write Review"
                 
-                modal_existing_data = self.existing_review if self.has_existing else None
+                # Pass only the data part, not the full dictionary with "exists" key
+                modal_existing_data = None
+                if self.has_existing and self.existing_review:
+                    modal_existing_data = {
+                        "rating": self.existing_review["rating"],
+                        "review_text": self.existing_review["review_text"]
+                    }
+                
                 modal = ReviewModal(self.stall_number, self.street_name, self.cog, modal_existing_data)
                 await button_interaction.response.send_modal(modal)
         
