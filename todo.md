@@ -13,4 +13,3 @@
 - Track user uniqeuness via Discord user ID (ReviewerID field in DB)
 - Record user plaintext name (ReviewerName field in DB). 
 - Update plaintext name with most up to date name if /reviewedit is ever run across all reviews with that user ID
-
