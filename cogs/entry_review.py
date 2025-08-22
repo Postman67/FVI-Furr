@@ -377,10 +377,16 @@ class EntryReview(commands.Cog):
                 self.street_name = street_name
                 self.cog = cog
                 self.existing_review = existing_review
+                self.has_existing = existing_review is not None and existing_review.get("exists", False)
             
-            @discord.ui.button(label="Write Review" if not self.existing_review else "Edit Review", style=discord.ButtonStyle.primary, emoji="📝")
+            @discord.ui.button(label="Edit Review", style=discord.ButtonStyle.primary, emoji="📝")
             async def open_review_modal(self, button_interaction: discord.Interaction, button: discord.ui.Button):
-                modal = ReviewModal(self.stall_number, self.street_name, self.cog, self.existing_review if self.existing_review and self.existing_review.get("exists") else None)
+                # Update button label based on whether review exists
+                if not self.has_existing:
+                    button.label = "Write Review"
+                
+                modal_existing_data = self.existing_review if self.has_existing else None
+                modal = ReviewModal(self.stall_number, self.street_name, self.cog, modal_existing_data)
                 await button_interaction.response.send_modal(modal)
         
         if existing_review.get("exists"):
@@ -393,6 +399,7 @@ class EntryReview(commands.Cog):
             )
             embed.add_field(name="Current Rating", value=f"{stars} ({existing_review['rating']}/5)", inline=False)
             embed.add_field(name="Current Review", value=existing_review["review_text"][:500] + ("..." if len(existing_review["review_text"]) > 500 else ""), inline=False)
+            view = ReviewButton(stall_number, street_name, self, existing_review)
         else:
             # Show new review option
             embed = discord.Embed(
@@ -400,8 +407,8 @@ class EntryReview(commands.Cog):
                 description=f"Click the button below to submit a review for stall #{stall_number_display} on {street_name}.",
                 color=0x3498db
             )
+            view = ReviewButton(stall_number, street_name, self, None)
         
-        view = ReviewButton(stall_number, street_name, self, existing_review if existing_review.get("exists") else None)
         await interaction.followup.send(embed=embed, view=view, ephemeral=True)
 
 async def setup(bot):
