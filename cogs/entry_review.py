@@ -39,15 +39,25 @@ class ReviewModal(discord.ui.Modal):
         self.cog = cog
         self.is_update = existing_review is not None
         
-        if self.is_update:
-            title = f"Edit Review for The Mall Stall #{stall_number} on {street_name}"
+        # Format stall number for display
+        if isinstance(stall_number, float) and stall_number.is_integer():
+            stall_display = str(int(stall_number))
         else:
-            title = f"Review The Mall Stall #{stall_number} on {street_name}"
+            stall_display = str(stall_number)
+        
+        # Keep title short to avoid Discord limits (45 chars max)
+        if self.is_update:
+            title = f"Edit Review - Stall #{stall_display}"
+        else:
+            title = f"Review Stall #{stall_display}"
             
         super().__init__(title=title, timeout=300)
         
         # Rating field (1-5) - prefill if editing
-        rating_default = str(existing_review["rating"]) if existing_review else ""
+        rating_default = ""
+        if existing_review and "rating" in existing_review:
+            rating_default = str(existing_review["rating"])
+        
         self.rating = discord.ui.TextInput(
             label="Rating (1-5 stars)",
             placeholder="Enter a rating from 1 to 5",
@@ -58,7 +68,14 @@ class ReviewModal(discord.ui.Modal):
         self.add_item(self.rating)
         
         # Review text - prefill if editing
-        review_default = existing_review["review_text"] if existing_review else ""
+        review_default = ""
+        if existing_review and "review_text" in existing_review:
+            # Ensure we don't exceed Discord's limits
+            review_text = existing_review["review_text"]
+            if len(review_text) > 4000:  # Discord limit for TextInput
+                review_text = review_text[:4000]
+            review_default = review_text
+        
         self.review_text = discord.ui.TextInput(
             label="Review",
             placeholder="Write your review of this stall...",
