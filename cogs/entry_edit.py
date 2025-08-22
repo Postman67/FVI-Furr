@@ -9,6 +9,34 @@ from discord.ext import commands
 from dotenv import load_dotenv
 import pymysql as mariadb
 
+def has_bot_permissions():
+    """Check if user has the required role or is the bot owner"""
+    async def predicate(interaction: discord.Interaction) -> bool:
+        # Get environment variables
+        postman_id = int(os.getenv('POSTMAN_ID'))
+        bot_role_id = int(os.getenv('BOTROLE_ID'))
+        
+        # Allow POSTMAN_ID user always
+        if interaction.user.id == postman_id:
+            return True
+        
+        # Check if user has the required role
+        if hasattr(interaction.user, 'roles'):
+            for role in interaction.user.roles:
+                if role.id == bot_role_id:
+                    return True
+        
+        # If no permissions, send error message
+        embed = discord.Embed(
+            title="❌ Permission Denied",
+            description="You don't have permission to use this bot's commands.",
+            color=0xe74c3c
+        )
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+        return False
+    
+    return app_commands.check(predicate)
+
 class StreetSelectionView(discord.ui.View):
     """View for selecting street name when editing The Mall stalls"""
     
@@ -335,6 +363,7 @@ class EntryEdit(commands.Cog):
         app_commands.Choice(name="Warp Hall", value="warp_hall"),
         app_commands.Choice(name="The Mall", value="the_mall")
     ])
+    @has_bot_permissions()
     async def stalledit(self, interaction: discord.Interaction, table: app_commands.Choice[str], stall_number: float):
         """Edit an existing stall entry"""
         

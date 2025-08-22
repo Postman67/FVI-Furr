@@ -9,6 +9,34 @@ from discord.ext import commands
 from dotenv import load_dotenv
 import pymysql as mariadb
 
+def has_bot_permissions():
+    """Check if user has the required role or is the bot owner"""
+    async def predicate(interaction: discord.Interaction) -> bool:
+        # Get environment variables
+        postman_id = int(os.getenv('POSTMAN_ID'))
+        bot_role_id = int(os.getenv('BOTROLE_ID'))
+        
+        # Allow POSTMAN_ID user always
+        if interaction.user.id == postman_id:
+            return True
+        
+        # Check if user has the required role
+        if hasattr(interaction.user, 'roles'):
+            for role in interaction.user.roles:
+                if role.id == bot_role_id:
+                    return True
+        
+        # If no permissions, send error message
+        embed = discord.Embed(
+            title="❌ Permission Denied",
+            description="You don't have permission to use this bot's commands.",
+            color=0xe74c3c
+        )
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+        return False
+    
+    return app_commands.check(predicate)
+
 class StreetNameTransformer(app_commands.Transformer):
     """Transformer for street name autocomplete"""
     
@@ -267,6 +295,7 @@ class EntryCreate(commands.Cog):
         app_commands.Choice(name="Warp Hall", value="warp_hall"),
         app_commands.Choice(name="The Mall", value="the_mall")
     ])
+    @has_bot_permissions()
     async def stallcreate(self, interaction: discord.Interaction, table: app_commands.Choice[str]):
         """Create a new stall entry using an interactive modal form"""
         modal = StallCreationModal(table.value, self)
@@ -280,6 +309,7 @@ class EntryCreate(commands.Cog):
         stall_name="Name of the stall",
         items_sold="Items sold at this stall"
     )
+    @has_bot_permissions()
     async def stallcreatetm(
         self, 
         interaction: discord.Interaction, 
@@ -341,6 +371,7 @@ class EntryCreate(commands.Cog):
         ign="Owner's in-game name",
         stall_name="Name of the stall"
     )
+    @has_bot_permissions()
     async def stallcreatewh(
         self,
         interaction: discord.Interaction,
