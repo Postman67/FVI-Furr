@@ -104,8 +104,8 @@ class EntryGet(commands.Cog):
             conn = mariadb.connect(
                 user=os.environ['DB_USER'],
                 password=os.environ['DB_PASSWORD'],
-                host="furryville-index.db",
-                database="furryville"
+                host=os.environ['DB_HOST'],
+                database=os.environ['DB_DATABASE']
             )
             return conn
         except mariadb.Error as e:

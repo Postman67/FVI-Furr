@@ -57,11 +57,25 @@ This document explains all the environment variables used in the FVI-Furr Discor
 - **Example**: `DB_PASSWORD=your_secure_password_here`
 - **Security**: HIGH - Use a strong, unique password. Never commit this to version control.
 
+### DB_HOST
+- **Type**: String
+- **Required**: Yes
+- **Description**: Hostname or IP address of the MariaDB/MySQL database server.
+- **Example**: `DB_HOST=furryville-index.db` or `DB_HOST=localhost` or `DB_HOST=192.168.1.100`
+- **Security**: Moderate - Should be accessible only from authorized sources
+
+### DB_DATABASE
+- **Type**: String
+- **Required**: Yes
+- **Description**: Name of the specific database to connect to on the database server.
+- **Example**: `DB_DATABASE=furryville`
+- **Security**: Low - Database name is not sensitive but should be consistent across environments
+
 ## Database Schema Information
 
-The bot connects to a MariaDB database with the following configuration:
-- **Host**: `furryville-index.db` (hardcoded)
-- **Database**: `furryville` (hardcoded)
+The bot connects to a MariaDB database using configurable environment variables:
+- **Host**: Configured via `DB_HOST` environment variable
+- **Database**: Configured via `DB_DATABASE` environment variable
 - **Tables**: Various tables for storing stall information and reviews
 
 ## Environment File Example
@@ -81,6 +95,8 @@ BOTROLE_ID=222222222222222222
 # Database Configuration
 DB_USER=your_database_username
 DB_PASSWORD=your_secure_database_password
+DB_HOST=furryville-index.db
+DB_DATABASE=furryville
 ```
 
 ## Security Best Practices
@@ -98,4 +114,4 @@ DB_PASSWORD=your_secure_database_password
 - **Bot won't start**: Check that DISCORD_TOKEN is correct and valid
 - **Commands not syncing**: Verify FURRYVILLE_ID and BTG_ID are correct server IDs
 - **Permission errors**: Ensure POSTMAN_ID and BOTROLE_ID are set correctly
-- **Database errors**: Verify DB_USER and DB_PASSWORD, and ensure database is accessible
+- **Database errors**: Verify DB_USER, DB_PASSWORD, DB_HOST, and DB_DATABASE, and ensure database is accessible
