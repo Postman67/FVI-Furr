@@ -1,0 +1,8 @@
+# Discord Bot Dependencies
+discord.py>=2.3.0
+python-dotenv>=1.0.0
+PyMySQL>=1.1.0
+
+# Additional dependencies that may be useful
+aiohttp>=3.8.0
+typing-extensions>=4.0.0
