@@ -21,7 +21,7 @@ This document explains all the environment variables used in the FVI-Furr Discor
 ### BTG_ID
 - **Type**: Integer (Discord Snowflake)
 - **Required**: Yes
-- **Description**: The Discord server ID for the BTG (Behind The Grove) server. Used to sync slash commands to this specific guild.
+- **Description**: The Discord server ID for the BTG server. Used to sync slash commands to this specific guild.
 - **Example**: `BTG_ID=123456789012345678`
 - **How to get**: Right-click on the server name in Discord → Copy Server ID (requires Developer Mode enabled)
 
