@@ -13,8 +13,8 @@ def has_bot_permissions():
     """Check if user has the required role or is the bot owner"""
     async def predicate(interaction: discord.Interaction) -> bool:
         # Get environment variables
-        postman_id = int(os.getenv('POSTMAN_ID'))
-        bot_role_id = int(os.getenv('BOTROLE_ID'))
+        postman_id = int(os.environ['POSTMAN_ID'])
+        bot_role_id = int(os.environ['BOTROLE_ID'])
         
         # Allow POSTMAN_ID user always
         if interaction.user.id == postman_id:
@@ -198,8 +198,8 @@ class EntryCreate(commands.Cog):
         """Get database connection"""
         try:
             conn = mariadb.connect(
-                user=os.getenv('DB_USER'),
-                password=os.getenv('DB_PASSWORD'),
+                user=os.environ['DB_USER'],
+                password=os.environ['DB_PASSWORD'],
                 host="furryville-index.db",
                 database="furryville"
             )

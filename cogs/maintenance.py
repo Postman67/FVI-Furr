@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-OWNER_ID = int(os.getenv("POSTMAN_ID"))  # Get owner ID from .env
+OWNER_ID = int(os.environ["POSTMAN_ID"])  # Get owner ID from .env
 
 class MaintenanceView(discord.ui.View):
     def __init__(self, cog, message: discord.Message):

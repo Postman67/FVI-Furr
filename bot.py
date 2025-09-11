@@ -9,10 +9,10 @@ from dotenv import load_dotenv
 import pymysql as mariadb
 
 load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
+TOKEN = os.environ['DISCORD_TOKEN']
 
-FURRYVILLE_ID = os.getenv('FURRYVILLE_ID')
-BTG_ID = os.getenv('BTG_ID')
+FURRYVILLE_ID = os.environ['FURRYVILLE_ID']
+BTG_ID = os.environ['BTG_ID']
 
 intents = Intents.default()
 intents.message_content = False

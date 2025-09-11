@@ -137,8 +137,8 @@ class EntryReview(commands.Cog):
         """Get database connection"""
         try:
             conn = mariadb.connect(
-                user=os.getenv('DB_USER'),
-                password=os.getenv('DB_PASSWORD'),
+                user=os.environ['DB_USER'],
+                password=os.environ['DB_PASSWORD'],
                 host="furryville-index.db",
                 database="furryville"
             )
