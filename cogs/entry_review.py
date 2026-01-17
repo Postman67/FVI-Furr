@@ -139,8 +139,8 @@ class EntryReview(commands.Cog):
             conn = mariadb.connect(
                 user=os.getenv('DB_USER'),
                 password=os.getenv('DB_PASSWORD'),
-                host="furryville-index.db",
-                database="furryville"
+                host=os.getenv('DB_HOST'),
+                database=os.getenv('DB_NAME')
             )
             return conn
         except mariadb.Error as e:
